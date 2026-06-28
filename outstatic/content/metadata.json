@@ -1,11 +1,11 @@
 {
-  "commit": "f33cc3970c662330d3c2e959cdfa9d4681e92b16",
-  "generated": "2026-06-28T23:18:02.968Z",
+  "commit": "3ab891b4871bbf716b37517686e904a4902ca0e5",
+  "generated": "2026-06-28T23:24:47.473Z",
   "metadata": [
     {
       "__outstatic": {
-        "commit": "f33cc3970c662330d3c2e959cdfa9d4681e92b16",
-        "hash": "4288913824",
+        "commit": "3ab891b4871bbf716b37517686e904a4902ca0e5",
+        "hash": "1858176516",
         "path": "outstatic/content/posts/test.mdx"
       },
       "author": {
@@ -13,9 +13,16 @@
         "picture": "https://avatars.githubusercontent.com/u/49285187?v=4"
       },
       "collection": "posts",
+      "description": "test blog",
       "publishedAt": "2026-06-28T23:39:48.352Z",
       "slug": "test",
       "status": "published",
+      "tags": [
+        {
+          "label": "test",
+          "value": "test"
+        }
+      ],
       "title": "test"
     }
   ]
