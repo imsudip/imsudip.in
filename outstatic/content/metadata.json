@@ -1,0 +1,22 @@
+{
+  "commit": "",
+  "generated": "2026-06-28T23:07:13.418Z",
+  "metadata": [
+    {
+      "__outstatic": {
+        "commit": "",
+        "hash": "498154033",
+        "path": "outstatic/content/posts/test.mdx"
+      },
+      "author": {
+        "name": "Sudip ghosh",
+        "picture": "https://avatars.githubusercontent.com/u/49285187?v=4"
+      },
+      "collection": "posts",
+      "publishedAt": "2026-06-28T23:39:48.352Z",
+      "slug": "test",
+      "status": "draft",
+      "title": "test"
+    }
+  ]
+}
