@@ -1,11 +1,11 @@
 {
-  "commit": "",
-  "generated": "2026-06-28T23:07:13.418Z",
+  "commit": "f33cc3970c662330d3c2e959cdfa9d4681e92b16",
+  "generated": "2026-06-28T23:18:02.968Z",
   "metadata": [
     {
       "__outstatic": {
-        "commit": "",
-        "hash": "498154033",
+        "commit": "f33cc3970c662330d3c2e959cdfa9d4681e92b16",
+        "hash": "4288913824",
         "path": "outstatic/content/posts/test.mdx"
       },
       "author": {
@@ -15,7 +15,7 @@
       "collection": "posts",
       "publishedAt": "2026-06-28T23:39:48.352Z",
       "slug": "test",
-      "status": "draft",
+      "status": "published",
       "title": "test"
     }
   ]
