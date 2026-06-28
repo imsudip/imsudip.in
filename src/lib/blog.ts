@@ -19,6 +19,23 @@ const LISTING_FIELDS = [
 const FULL_FIELDS = [...LISTING_FIELDS, 'content'];
 
 /**
+ * Normalise Outstatic tags (array of { label, value } objects) to string[]
+ */
+function normaliseTags(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((tag) => {
+      if (typeof tag === 'string') return tag;
+      if (tag && typeof tag === 'object') {
+        const obj = tag as { label?: string; value?: string };
+        return obj.value ?? obj.label ?? '';
+      }
+      return '';
+    })
+    .filter((tag): tag is string => tag.length > 0);
+}
+
+/**
  * Map an Outstatic document to the existing BlogFrontmatter shape
  */
 function mapToFrontmatter(doc: Record<string, unknown>): BlogFrontmatter {
@@ -26,7 +43,7 @@ function mapToFrontmatter(doc: Record<string, unknown>): BlogFrontmatter {
     title: (doc.title as string) ?? '',
     description: (doc.description as string) ?? '',
     image: (doc.coverImage as string) ?? '',
-    tags: Array.isArray(doc.tags) ? (doc.tags as string[]) : [],
+    tags: normaliseTags(doc.tags),
     date: (doc.publishedAt as string) ?? '',
     isPublished: doc.status === 'published',
   };

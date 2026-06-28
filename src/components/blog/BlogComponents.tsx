@@ -1,9 +1,22 @@
+import Callout from '@/components/mdx/Callout';
+import CodeBlock from '@/components/mdx/CodeBlock';
+import Figure from '@/components/mdx/Figure';
+import LinkCard from '@/components/mdx/LinkCard';
+import Spoiler from '@/components/mdx/Spoiler';
+import YouTubeEmbed from '@/components/mdx/YouTubeEmbed';
 import Image from 'next/image';
 import React from 'react';
 
 import { CodeCopyButton } from './CodeCopyButton';
 
 export const BlogComponents = {
+  // Outstatic blocks
+  Callout,
+  CodeBlock,
+  Figure,
+  LinkCard,
+  Spoiler,
+  YouTubeEmbed,
   // Override default image component
   img: ({
     src,

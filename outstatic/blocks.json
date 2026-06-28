@@ -1,0 +1,138 @@
+{
+  "blocks": [
+    {
+      "name": "Callout",
+      "description": "Highlighted note box for tips, warnings, or info",
+      "icon": "info",
+      "keywords": ["tip", "warning", "note", "aside", "danger"],
+      "props": [
+        {
+          "name": "type",
+          "type": "Select",
+          "required": true,
+          "description": "Callout style",
+          "options": ["info", "warning", "tip", "danger"]
+        },
+        {
+          "name": "title",
+          "type": "String",
+          "description": "Optional heading"
+        },
+        {
+          "name": "children",
+          "type": "Children",
+          "description": "Callout body content"
+        }
+      ]
+    },
+    {
+      "name": "YouTubeEmbed",
+      "description": "Embed a YouTube video by URL or ID",
+      "icon": "video",
+      "keywords": ["youtube", "embed", "video"],
+      "props": [
+        {
+          "name": "url",
+          "type": "String",
+          "description": "Full youtube.com URL"
+        },
+        {
+          "name": "id",
+          "type": "String",
+          "description": "Bare 11-char video ID (alternative to url)"
+        }
+      ]
+    },
+    {
+      "name": "CodeBlock",
+      "description": "Code snippet with optional filename and language label",
+      "icon": "code",
+      "keywords": ["code", "snippet", "syntax"],
+      "props": [
+        {
+          "name": "language",
+          "type": "String",
+          "description": "Programming language (e.g. typescript, python)"
+        },
+        {
+          "name": "filename",
+          "type": "String",
+          "description": "Optional filename label"
+        },
+        {
+          "name": "children",
+          "type": "Children",
+          "description": "Code content"
+        }
+      ]
+    },
+    {
+      "name": "Figure",
+      "description": "Image with an optional caption",
+      "icon": "image",
+      "keywords": ["image", "figure", "caption", "photo"],
+      "props": [
+        {
+          "name": "src",
+          "type": "Image",
+          "required": true,
+          "description": "Image URL"
+        },
+        {
+          "name": "alt",
+          "type": "String",
+          "description": "Alt text for accessibility"
+        },
+        {
+          "name": "caption",
+          "type": "Text",
+          "description": "Caption shown below the image"
+        }
+      ]
+    },
+    {
+      "name": "Spoiler",
+      "description": "Collapsible content section",
+      "icon": "chevron-down",
+      "keywords": ["spoiler", "details", "collapse", "hidden"],
+      "props": [
+        {
+          "name": "summary",
+          "type": "String",
+          "description": "Click-to-reveal label"
+        },
+        {
+          "name": "children",
+          "type": "Children",
+          "description": "Hidden content"
+        }
+      ]
+    },
+    {
+      "name": "LinkCard",
+      "description": "Bookmark card preview for external links",
+      "icon": "link",
+      "keywords": ["link", "bookmark", "card", "preview"],
+      "props": [
+        {
+          "name": "url",
+          "type": "String",
+          "required": true,
+          "description": "Destination URL"
+        },
+        {
+          "name": "title",
+          "type": "String",
+          "description": "Link title"
+        },
+        {
+          "name": "description",
+          "type": "Text",
+          "description": "Short description"
+        }
+      ]
+    }
+  ],
+  "commit": "",
+  "generated": ""
+}
