@@ -1,8 +1,8 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area';
 import type Lenis from 'lenis';
+import { ScrollArea as ScrollAreaPrimitive } from 'radix-ui';
 import * as React from 'react';
 
 function ScrollArea({

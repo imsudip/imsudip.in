@@ -4,8 +4,8 @@ import { useHapticFeedback } from '@/hooks/use-haptic-feedback';
 import { useUmami } from '@/hooks/use-umami';
 import { cn } from '@/lib/utils';
 import type { AnalyticsEvent } from '@/types/analytics';
-import { Slot } from '@radix-ui/react-slot';
 import { type VariantProps, cva } from 'class-variance-authority';
+import { Slot as SlotPrimitive } from 'radix-ui';
 import * as React from 'react';
 
 const buttonVariants = cva(
@@ -57,7 +57,7 @@ function Button({
      */
     track?: AnalyticsEvent;
   }) {
-  const Comp = asChild ? Slot : 'button';
+  const Comp = asChild ? SlotPrimitive.Slot : 'button';
   const { triggerHaptic, isMobile } = useHapticFeedback();
   const { trackEvent } = useUmami();
 

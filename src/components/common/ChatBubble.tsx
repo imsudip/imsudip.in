@@ -16,40 +16,41 @@ import { heroConfig } from '@/config/Hero';
 import { useHapticFeedback } from '@/hooks/use-haptic-feedback';
 import { useUmami } from '@/hooks/use-umami';
 import { cn } from '@/lib/utils';
+import { useChat } from '@ai-sdk/react';
 import React, { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 
 import SendIcon from '../svgs/SendIcon';
 
-interface Message {
-  id: number;
-  text: string;
-  sender: 'user' | 'bot';
-  timestamp: string;
-  isStreaming?: boolean;
+const greetingMessage = {
+  id: 'greeting',
+  role: 'assistant' as const,
+  parts: [
+    {
+      type: 'text' as const,
+      text: "Hello! I'm Sudip's Portfolio Assistant. How can I help you?",
+    },
+  ],
+};
+
+function getMessageText(parts: Array<{ type: string; text?: string }>): string {
+  return parts
+    .filter((p) => p.type === 'text' && typeof p.text === 'string')
+    .map((p) => p.text)
+    .join('');
 }
 
-const initialMessages: Message[] = [
-  {
-    id: 1,
-    text: "Hello! I'm Ram's Portfolio Assistant. How can I help you?",
-    sender: 'bot',
-    timestamp: new Date().toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit',
-    }),
-  },
-];
-
 const ChatBubble: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
-  const [newMessage, setNewMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const { messages, sendMessage, status } = useChat();
+  const [input, setInput] = useState('');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { triggerHaptic, isMobile } = useHapticFeedback();
   const { trackEvent } = useUmami();
 
-  // Auto-scroll to bottom when new messages are added
+  const isLoading = status === 'streaming' || status === 'submitted';
+  const displayMessages = messages.length === 0 ? [greetingMessage] : messages;
+
+  // Auto-scroll to bottom when messages change
   useEffect(() => {
     if (scrollAreaRef.current) {
       const scrollElement = scrollAreaRef.current.querySelector(
@@ -59,203 +60,33 @@ const ChatBubble: React.FC = () => {
         scrollElement.scrollTop = scrollElement.scrollHeight;
       }
     }
-  }, [messages]);
+  }, [messages, status]);
 
-  const handleSendMessage = async () => {
-    if (!newMessage.trim() || isLoading) return;
-
-    // Trigger haptic feedback on mobile devices
-    if (isMobile()) {
-      triggerHaptic('light');
-    }
-
-    const messageText = newMessage.trim();
+  const handleSend = () => {
+    if (!input.trim() || isLoading) return;
+    if (isMobile()) triggerHaptic('light');
     trackEvent({
       name: 'chat_message_sent',
-      data: { message: messageText, sender: 'user' },
+      data: { message: input, sender: 'user' },
     });
-    const userMessage: Message = {
-      id: Date.now(),
-      text: messageText,
-      sender: 'user',
-      timestamp: new Date().toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-      }),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-    setNewMessage('');
-    setIsLoading(true);
-
-    // Create a temporary bot message for streaming
-    const botMessageId = Date.now() + 1;
-    const botMessage: Message = {
-      id: botMessageId,
-      text: '',
-      sender: 'bot',
-      timestamp: new Date().toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-      }),
-      isStreaming: true,
-    };
-
-    setMessages((prev) => [...prev, botMessage]);
-
-    // Send the message using the refactored function
-    await sendMessage(messageText, botMessageId);
+    sendMessage({ text: input.trim() });
+    setInput('');
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSendMessage();
+      handleSend();
     }
   };
 
   const handleSuggestionClick = (suggestion: string) => {
-    // Trigger haptic feedback on mobile devices
-    if (isMobile()) {
-      triggerHaptic('selection');
-    }
-
+    if (isMobile()) triggerHaptic('selection');
     trackEvent({
       name: 'chat_message_sent',
       data: { message: suggestion, sender: 'user' },
     });
-
-    setNewMessage(suggestion);
-    // Auto-send the suggestion
-    const userMessage: Message = {
-      id: Date.now(),
-      text: suggestion,
-      sender: 'user',
-      timestamp: new Date().toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-      }),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-    setIsLoading(true);
-
-    // Create a temporary bot message for streaming
-    const botMessageId = Date.now() + 1;
-    const botMessage: Message = {
-      id: botMessageId,
-      text: '',
-      sender: 'bot',
-      timestamp: new Date().toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-      }),
-      isStreaming: true,
-    };
-
-    setMessages((prev) => [...prev, botMessage]);
-
-    // Send the message (reuse the same logic as handleSendMessage)
-    sendMessage(suggestion, botMessageId);
-  };
-
-  const sendMessage = async (messageText: string, botMessageId: number) => {
-    try {
-      // Prepare conversation history for Gemini API format
-      const history = messages.slice(-10).map((msg) => ({
-        role: msg.sender === 'user' ? ('user' as const) : ('model' as const),
-        parts: [{ text: msg.text }],
-      }));
-
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: messageText,
-          history,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-
-      if (!reader) {
-        throw new Error('No reader available');
-      }
-
-      let accumulatedText = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-
-        if (done) break;
-
-        const chunk = decoder.decode(value);
-        const lines = chunk.split('\n');
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            try {
-              const data = JSON.parse(line.slice(6));
-
-              if (data.error) {
-                throw new Error(data.error);
-              }
-
-              if (data.text) {
-                accumulatedText += data.text;
-
-                // Update the streaming message in real-time
-                setMessages((prev) =>
-                  prev.map((msg) =>
-                    msg.id === botMessageId
-                      ? { ...msg, text: accumulatedText, isStreaming: true }
-                      : msg,
-                  ),
-                );
-              }
-
-              if (data.done) {
-                // Finalize the message
-                setMessages((prev) =>
-                  prev.map((msg) =>
-                    msg.id === botMessageId
-                      ? { ...msg, text: accumulatedText, isStreaming: false }
-                      : msg,
-                  ),
-                );
-                break;
-              }
-            } catch {
-              continue;
-            }
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error sending message:', error);
-
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === botMessageId
-            ? {
-                ...msg,
-                text: "I'm sorry, I'm having trouble responding right now. Please try again later.",
-                isStreaming: false,
-              }
-            : msg,
-        ),
-      );
-    } finally {
-      setIsLoading(false);
-      setNewMessage('');
-    }
+    sendMessage({ text: suggestion });
   };
 
   return (
@@ -288,83 +119,84 @@ const ChatBubble: React.FC = () => {
       <ExpandableChatBody>
         <ScrollArea ref={scrollAreaRef} className="h-full p-4">
           <div className="space-y-4">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={cn(
-                  'flex w-max max-w-xs flex-col gap-2 rounded-lg px-3 py-2 text-sm',
-                  message.sender === 'user'
-                    ? 'text-secondary bg-muted ml-auto'
-                    : 'bg-muted',
-                )}
-              >
-                <div className="flex items-start space-x-2">
-                  {message.sender === 'bot' && (
-                    <Avatar className="border-primary h-6 w-6 border-2 bg-blue-300 dark:bg-yellow-300">
-                      <AvatarImage src="/assets/logo.png" alt="Assistant" />
-                      <AvatarFallback>AI</AvatarFallback>
-                    </Avatar>
+            {displayMessages.map((message) => {
+              const text = getMessageText(message.parts);
+              const isUser = message.role === 'user';
+              const isLastAssistantStreamingPlaceholder =
+                !text && !isUser && status === 'submitted';
+
+              return (
+                <div
+                  key={message.id}
+                  className={cn(
+                    'flex w-max max-w-xs flex-col gap-2 rounded-lg px-3 py-2 text-sm',
+                    isUser ? 'text-secondary bg-muted ml-auto' : 'bg-muted',
                   )}
-                  <div className="max-w-xs flex-1 md:max-w-sm">
-                    <div className="flex items-center gap-2">
-                      <div className="prose prose-sm dark:prose-invert max-w-none flex-1">
-                        {message.text ? (
-                          <ReactMarkdown
-                            components={{
-                              a: (props) => (
-                                <a
-                                  {...props}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="break-words text-blue-500 underline hover:text-blue-700"
-                                />
-                              ),
-                              // Custom paragraph component to remove default margins
-                              p: (props) => (
-                                <p {...props} className="m-0 leading-relaxed" />
-                              ),
-                              // Custom list components
-                              ul: (props) => (
-                                <ul {...props} className="m-0 pl-4" />
-                              ),
-                              ol: (props) => (
-                                <ol {...props} className="m-0 pl-4" />
-                              ),
-                              li: (props) => <li {...props} className="m-0" />,
-                              // Custom strong/bold component
-                              strong: (props) => (
-                                <strong {...props} className="font-semibold" />
-                              ),
-                            }}
-                          >
-                            {message.text}
-                          </ReactMarkdown>
-                        ) : (
-                          message.isStreaming && (
+                >
+                  <div className="flex items-start space-x-2">
+                    {!isUser && (
+                      <Avatar className="border-primary h-6 w-6 border-2 bg-blue-300 dark:bg-yellow-300">
+                        <AvatarImage src="/assets/logo.png" alt="Assistant" />
+                        <AvatarFallback>AI</AvatarFallback>
+                      </Avatar>
+                    )}
+                    <div className="max-w-xs flex-1 md:max-w-sm">
+                      <div className="flex items-center gap-2">
+                        <div className="prose prose-sm dark:prose-invert max-w-none flex-1">
+                          {text ? (
+                            <ReactMarkdown
+                              components={{
+                                a: (props) => (
+                                  <a
+                                    {...props}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="break-words text-blue-500 underline hover:text-blue-700"
+                                  />
+                                ),
+                                // Custom paragraph component to remove default margins
+                                p: (props) => (
+                                  <p
+                                    {...props}
+                                    className="m-0 leading-relaxed"
+                                  />
+                                ),
+                                // Custom list components
+                                ul: (props) => (
+                                  <ul {...props} className="m-0 pl-4" />
+                                ),
+                                ol: (props) => (
+                                  <ol {...props} className="m-0 pl-4" />
+                                ),
+                                li: (props) => (
+                                  <li {...props} className="m-0" />
+                                ),
+                                // Custom strong/bold component
+                                strong: (props) => (
+                                  <strong
+                                    {...props}
+                                    className="font-semibold"
+                                  />
+                                ),
+                              }}
+                            >
+                              {text}
+                            </ReactMarkdown>
+                          ) : isLastAssistantStreamingPlaceholder ? (
                             <span className="text-muted-foreground">
                               Thinking...
                             </span>
-                          )
-                        )}
+                          ) : null}
+                        </div>
                       </div>
                     </div>
-                    <p
-                      className={cn(
-                        'mt-1 text-xs',
-                        message.sender === 'user'
-                          ? 'text-secondary'
-                          : 'text-muted-foreground',
-                      )}
-                    >
-                      {message.timestamp}
-                    </p>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             {/* Show suggestions only when conversation just started */}
-            {messages.length === 1 && !isLoading && (
+            {messages.length === 0 && status === 'ready' && (
               <div className="space-y-2">
                 <p className="text-muted-foreground px-3 text-xs">
                   Quick questions:
@@ -392,16 +224,16 @@ const ChatBubble: React.FC = () => {
         <div className="flex space-x-2">
           <Input
             placeholder="Ask me about my work and experience..."
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyPress}
             disabled={isLoading}
             className="flex-1"
           />
           <Button
             size="sm"
-            onClick={handleSendMessage}
-            disabled={!newMessage.trim() || isLoading}
+            onClick={handleSend}
+            disabled={!input.trim() || isLoading}
           >
             {isLoading ? (
               <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
