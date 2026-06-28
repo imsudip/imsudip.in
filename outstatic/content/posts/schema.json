@@ -2,5 +2,27 @@
   "title": "posts",
   "slug": "posts",
   "type": "object",
-  "properties": {}
+  "properties": {
+    "description": {
+      "title": "description",
+      "required": false,
+      "description": "Short summary for SEO and blog listings",
+      "fieldType": "Text",
+      "dataType": "string"
+    },
+    "coverImage": {
+      "title": "coverImage",
+      "required": false,
+      "description": "Hero/cover image for the post",
+      "fieldType": "Image",
+      "dataType": "string"
+    },
+    "tags": {
+      "title": "tags",
+      "required": false,
+      "description": "Post tags for filtering",
+      "fieldType": "Tags",
+      "dataType": "array"
+    }
+  }
 }
