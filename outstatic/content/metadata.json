@@ -1,11 +1,11 @@
 {
-  "commit": "3ab891b4871bbf716b37517686e904a4902ca0e5",
-  "generated": "2026-06-28T23:24:47.473Z",
+  "commit": "e8f3bd99ac9278235a2cf1b11dd413683468d8b3",
+  "generated": "2026-06-28T23:39:26.291Z",
   "metadata": [
     {
       "__outstatic": {
-        "commit": "3ab891b4871bbf716b37517686e904a4902ca0e5",
-        "hash": "1858176516",
+        "commit": "e8f3bd99ac9278235a2cf1b11dd413683468d8b3",
+        "hash": "3015975866",
         "path": "outstatic/content/posts/test.mdx"
       },
       "author": {
@@ -13,6 +13,7 @@
         "picture": "https://avatars.githubusercontent.com/u/49285187?v=4"
       },
       "collection": "posts",
+      "coverImage": "/images/nft-avatar-A2Nz.webp",
       "description": "test blog",
       "publishedAt": "2026-06-28T23:39:48.352Z",
       "slug": "test",
