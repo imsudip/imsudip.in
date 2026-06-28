@@ -1,158 +1,145 @@
-# Sleek Portfolio by ramxcodes
+# imsudip.in
 
-A modern, responsive portfolio website built with Next.js 15, TypeScript, Tailwind CSS, and Shadcn UI. Features a blog system, project showcase, work experience timeline, and contact form with Telegram integration.
+Personal portfolio and blog for Sudip Ghosh — engineer, builder, and occasional blogger. Built with Next.js 15, React 19, Tailwind 4, and Outstatic CMS. Live at [imsudip.in](https://imsudip.in).
 
-![Portfolio Preview](/public/meta/hero.png)
+The initial scaffold was inspired by [ramxcodes/sleek-portfolio](https://github.com/ramxcodes/sleek-portfolio). The codebase has since been substantially rewritten — different CMS, different AI stack, different content architecture — so this is not a fork. Credit where it's due for the starting point.
 
-## Deploy
+## What's here
 
-Click here to your portfolio template now:
+- **Portfolio** — hero, about, work experience timeline, project case studies, gears, journey
+- **Blog** — managed via [Outstatic](https://outstatic.com) CMS at `/outstatic`, Git-native (every post is a commit), with AI writing completions
+- **AI chat assistant** — floating chat bubble powered by Vercel AI SDK + OpenAI `gpt-4o-mini`
+- **Contact form** — sends messages to Telegram via a bot
+- **Analytics** — Umami, privacy-friendly
+- **Dark/light mode** — system-aware, with view transitions
+- **MDX blocks** — Callout, YouTubeEmbed, CodeBlock, Figure, Spoiler, LinkCard — available in the Outstatic editor via slash command
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Framxcodes%2Fsleek-portfolio&env=TELEGRAM_BOT_TOKEN,TELEGRAM_CHAT_ID,GEMINI_API_KEY,NEXT_PUBLIC_URL,NEXT_PUBLIC_UMAMI_SRC,NEXT_PUBLIC_UMAMI_ID)
+## Tech stack
 
-## Features
+| Layer           | Choice                                                                 |
+| --------------- | ---------------------------------------------------------------------- |
+| Framework       | Next.js 15 (App Router, Turbopack)                                     |
+| UI              | React 19, Tailwind 4, shadcn/ui (new-york), Radix UI (unified package) |
+| CMS             | Outstatic v2 (Git-native, GitHub OAuth, built-in AI)                   |
+| AI              | Vercel AI SDK + OpenAI                                                 |
+| MDX             | `next-mdx-remote/rsc` + `@shikijs/rehype` for syntax highlighting      |
+| Validation      | Zod 4                                                                  |
+| Package manager | Bun                                                                    |
+| Deploy          | Vercel                                                                 |
 
-- **Next.js 15** with App Router
-- **Tailwind CSS** for styling
-- **Shadcn UI** components
-- **Dark/Light** mode
-- **Responsive** design
-- **MDX** for blog posts and project details
-- **Contact Form** with Telegram integration
-- **SEO** optimized
-- **TypeScript** for type safety
-- **Umami Analytics** for privacy-focused web analytics
+## Getting started
 
-## Prerequisites
+```bash
+# bun isn't in the default PATH on some machines
+export PATH="$HOME/.bun/bin:$PATH"
 
-Before you begin, ensure you have the following installed:
+bun install
+bun run dev    # http://localhost:3000
+```
 
-- Node.js (v18 or higher)
-- Bun (preferred) or npm
+Build is the only verification gate — there's no test suite:
 
-## Environment Variables
+```bash
+bun run build  # run before pushing
+```
 
-Create a `.env` file in the root directory with the following variables:
+## Environment variables
+
+Copy `.env.example` and fill in the values. The example file may be stale — refer to the list below as the source of truth.
 
 ```env
-TELEGRAM_BOT_TOKEN="your-token"
-TELEGRAM_CHAT_ID="your-chat-id"
-GEMINI_API_KEY="your-api-key"
-NODE_ENV="development"
-NEXT_PUBLIC_URL="http://localhost:3000"
-NEXT_PUBLIC_UMAMI_SRC="your-umami-script-url"
-NEXT_PUBLIC_UMAMI_ID="your-umami-website-id"
+# AI chat + Outstatic AI completions
+OPENAI_API_KEY="sk-..."
+
+# Contact form (create a bot via @BotFather)
+TELEGRAM_BOT_TOKEN="..."
+TELEGRAM_CHAT_ID="..."
+
+# Outstatic CMS — create a GitHub OAuth app at https://github.com/settings/applications/new
+# Callback URL: http://localhost:3000/api/outstatic/callback (dev) / https://imsudip.in/api/outstatic/callback (prod)
+OST_GITHUB_ID="..."
+OST_GITHUB_SECRET="..."
+OST_TOKEN_SECRET="..."   # generate with: openssl rand -hex 32
+OST_REPO_SLUG="imsudip.in"
+OST_REPO_OWNER="imsudip"
+OST_REPO_BRANCH="main"
+OST_CONTENT_PATH="outstatic/content"
+
+# Public site config
+NEXT_PUBLIC_URL="https://imsudip.in"
+NEXT_PUBLIC_UMAMI_SRC="https://cloud.umami.is/script.js"
+NEXT_PUBLIC_UMAMI_ID="..."
 ```
 
-### Setting up Telegram Integration
+Validate Telegram config:
 
-1. Create a new bot with [@BotFather](https://t.me/botfather) on Telegram
-2. Copy the bot token and add it to your `.env` file as `TELEGRAM_BOT_TOKEN`
-3. Start a chat with your bot and send any message (e.g., "hello")
-4. Get your chat ID:
-
-   ```bash
-   # Run the test script to get your chat ID
-   bun run test-telegram
-   ```
-
-   - The script will show your Chat ID from the message you sent
-   - Copy the Chat ID and add it to your `.env` file as `TELEGRAM_CHAT_ID`
-   - Run the script again to verify everything works
-
-### Setting up Umami Analytics
-
-1. Visit Umami:
-   - Self-host Umami or use [Umami Cloud](https://cloud.umami.is)
-   - Follow Umami's [installation guide](https://umami.is/docs/install)
-
-2. Get your credentials:
-   - Copy your Umami script URL (ends with `/script.js`)
-   - Get your website ID from Umami dashboard
-
-3. Configure environment variables:
-   ```env
-   NEXT_PUBLIC_UMAMI_SRC="https://[your-umami-instance]/script.js"
-   NEXT_PUBLIC_UMAMI_ID="your-website-id"
-   ```
-
-## Getting Started
-
-1. Clone the repository:
-
-   ```bash
-   git clone https://github.com/ramxcodes/sleek-portfolio.git
-   cd sleek-portfolio
-   ```
-
-2. Install dependencies:
-
-   ```bash
-   # Using bun (recommended)
-   bun install
-
-   # Using npm
-   npm install
-   ```
-
-3. Run the development server:
-
-   ```bash
-   # Using bun
-   bun dev
-
-   # Using npm
-   npm run dev
-   ```
-
-4. Open [http://localhost:3000](http://localhost:3000) in your browser
-
-## Configuration
-
-The project uses configuration files in the `src/config` directory for easy customization:
-
-- `About.tsx` - About section content
-- `Contact.tsx` - Contact form settings
-- `Experience.tsx` - Work experience details
-- `Footer.tsx` - Footer links and content
-- `Gears.tsx` - Setup/gear section
-- `Hero.tsx` - Hero section content
-- `Meta.tsx` - SEO and metadata
-- `Navbar.tsx` - Navigation links
-- `Projects.tsx` - Project showcase settings
-- `Quote.ts` - Random quotes configuration
-- `Resume.ts` - Resume section details
-- `Setup.tsx` - Development setup information
-- `cat.ts` - Enable disable the cat
-
-## Adding New Technology Icons
-
-1. Visit [Devicon](https://devicon.dev/) to find the icon you want to add
-2. Create a new component in `src/components/technologies/`
-3. Follow the existing component structure for consistency
-
-Example:
-
-```tsx
-export const NewTechIcon = () => {
-  return <svg>// SVG content from devicon</svg>;
-};
+```bash
+bun run test-telegram
 ```
 
-## Adding Content
+## Architecture
 
-### Blog Posts
+### Route groups
 
-1. Create a new MDX file in `src/data/blog/`
-2. Add metadata and content following existing post structure
-3. Add blog thumbnail in `public/blog/`
+The app router is split into two route groups to isolate layouts:
 
-### Projects
+- `src/app/(web)/` — public site (blog, projects, journey, contact, etc.) with full chrome (Navbar, Footer, ChatBubble, OnekoCat)
+- `src/app/(cms)/` — Outstatic dashboard at `/outstatic` with a minimal `<html><body id="outstatic">` wrapper
+- `src/app/api/` — API routes (chat, contact, outstatic)
 
-1. Create a new MDX file in `src/data/projects/`
-2. Add metadata and content following existing project structure
-3. Add project thumbnail in `public/project/`
+No top-level `src/app/layout.tsx` — it would conflict with both group layouts.
+
+### Content systems
+
+| Content              | Source                          | Editor                              |
+| -------------------- | ------------------------------- | ----------------------------------- |
+| Blog posts           | `outstatic/content/posts/*.mdx` | Outstatic dashboard at `/outstatic` |
+| Project case studies | `src/data/projects/*.mdx`       | Manual MDX editing                  |
+| Journey              | `src/data/journey/journey.mdx`  | Manual MDX editing                  |
+
+Blog is Git-native via Outstatic — every save is a GitHub commit that triggers a Vercel rebuild. Projects and journey are still manual MDX.
+
+### Config-driven content
+
+All site identity and content lives in `src/config/` (Hero, About, Experience, Projects, Gears, Journey, ChatPrompt, CTA, etc.). To change what appears on the site, edit these files — not the page components.
+
+### MDX blocks
+
+Custom blocks for the blog editor, defined in `outstatic/blocks.json` with matching React components in `src/components/mdx/`:
+
+- **Callout** — info/warning/tip/danger note boxes
+- **YouTubeEmbed** — embed by URL or video ID
+- **CodeBlock** — code with filename/language label
+- **Figure** — image with caption
+- **Spoiler** — collapsible content
+- **LinkCard** — bookmark card for external links
+
+Type `/` in the Outstatic editor to insert any block.
+
+### Media
+
+Uploaded images are committed to `public/images/` and served at `/images/`. Configured in `outstatic/config.json`, not env vars.
+
+## Customization
+
+### Adding a new page
+
+1. Create `src/app/(web)/your-page/page.tsx`
+2. Add it to the navbar in `src/config/Navbar.tsx`
+3. Add metadata in `src/config/Meta.tsx`
+
+### Adding a new technology icon
+
+1. Find the icon on [Devicon](https://devicon.dev/)
+2. Create a component in `src/components/technologies/`
+3. Follow the existing component structure
+
+### Adding a new MDX block
+
+1. Write a React component in `src/components/mdx/`
+2. Register it in `src/components/blog/BlogComponents.tsx`
+3. Add the block definition to `outstatic/blocks.json` (or via the dashboard's Block Library UI)
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT — see [LICENSE](LICENSE).
