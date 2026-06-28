@@ -1,97 +1,78 @@
 import { BlogFrontmatter, BlogPost, BlogPostPreview } from '@/types/blog';
-import fs from 'fs';
-import matter from 'gray-matter';
-import path from 'path';
+import {
+  getDocumentBySlug,
+  getDocumentSlugs,
+  getDocuments,
+} from 'outstatic/server';
 
-const blogDirectory = path.join(process.cwd(), 'src/data/blog');
+const COLLECTION = 'posts';
+
+// Fields to request from Outstatic
+const LISTING_FIELDS = [
+  'slug',
+  'title',
+  'description',
+  'coverImage',
+  'tags',
+  'publishedAt',
+];
+const FULL_FIELDS = [...LISTING_FIELDS, 'content'];
 
 /**
- * Get all blog post files from the blog directory
+ * Map an Outstatic document to the existing BlogFrontmatter shape
+ */
+function mapToFrontmatter(doc: Record<string, unknown>): BlogFrontmatter {
+  return {
+    title: (doc.title as string) ?? '',
+    description: (doc.description as string) ?? '',
+    image: (doc.coverImage as string) ?? '',
+    tags: Array.isArray(doc.tags) ? (doc.tags as string[]) : [],
+    date: (doc.publishedAt as string) ?? '',
+    isPublished: doc.status === 'published',
+  };
+}
+
+/**
+ * Get all blog post slugs (including drafts — for generateStaticParams)
  */
 export function getBlogPostSlugs(): string[] {
-  if (!fs.existsSync(blogDirectory)) {
-    return [];
-  }
-
-  const files = fs.readdirSync(blogDirectory);
-  return files
-    .filter((file) => file.endsWith('.mdx'))
-    .map((file) => file.replace(/\.mdx$/, ''));
+  return getDocumentSlugs(COLLECTION);
 }
 
 /**
- * Get blog post by slug with full content
+ * Get blog post by slug with full content.
+ * Returns null for draft posts.
  */
 export function getBlogPostBySlug(slug: string): BlogPost | null {
-  try {
-    const fullPath = path.join(blogDirectory, `${slug}.mdx`);
+  const doc = getDocumentBySlug(COLLECTION, slug, FULL_FIELDS);
 
-    if (!fs.existsSync(fullPath)) {
-      return null;
-    }
+  if (!doc) return null;
 
-    const fileContents = fs.readFileSync(fullPath, 'utf8');
-    const { data, content } = matter(fileContents);
-
-    // Validate frontmatter
-    const frontmatter = data as BlogFrontmatter;
-    if (!frontmatter.title || !frontmatter.description) {
-      throw new Error(`Invalid frontmatter in ${slug}.mdx`);
-    }
-
-    return {
-      slug,
-      frontmatter,
-      content,
-    };
-  } catch (error) {
-    console.error(`Error reading blog post ${slug}:`, error);
-    return null;
-  }
+  return {
+    slug,
+    frontmatter: mapToFrontmatter(doc),
+    content: (doc.content as string) ?? '',
+  };
 }
 
 /**
- * Get all blog posts with frontmatter only (for listing page)
- */
-export function getAllBlogPosts(): BlogPostPreview[] {
-  const slugs = getBlogPostSlugs();
-
-  const posts = slugs
-    .map((slug) => {
-      const post = getBlogPostBySlug(slug);
-      if (!post) return null;
-
-      return {
-        slug: post.slug,
-        frontmatter: post.frontmatter,
-      };
-    })
-    .filter((post): post is BlogPostPreview => post !== null)
-    .sort((a, b) => {
-      // Sort by date, newest first
-      return (
-        new Date(b.frontmatter.date).getTime() -
-        new Date(a.frontmatter.date).getTime()
-      );
-    });
-
-  return posts;
-}
-
-/**
- * Get all published blog posts
+ * Get all published blog posts (for listing page).
+ * Outstatic's getDocuments already filters to published and sorts by date desc.
  */
 export function getPublishedBlogPosts(): BlogPostPreview[] {
-  const allPosts = getAllBlogPosts();
-  return allPosts.filter((post) => post.frontmatter.isPublished);
+  const docs = getDocuments(COLLECTION, LISTING_FIELDS);
+
+  return docs.map((doc) => ({
+    slug: doc.slug as string,
+    frontmatter: mapToFrontmatter(doc),
+  }));
 }
 
 /**
  * Get blog posts by tag
  */
 export function getBlogPostsByTag(tag: string): BlogPostPreview[] {
-  const publishedPosts = getPublishedBlogPosts();
-  return publishedPosts.filter((post) =>
+  return getPublishedBlogPosts().filter((post) =>
     post.frontmatter.tags.some(
       (postTag) => postTag.toLowerCase() === tag.toLowerCase(),
     ),
@@ -117,11 +98,11 @@ export function getAllTags(): string[] {
 /**
  * Get related posts based on tags (excluding the current post)
  */
-export async function getRelatedPosts(
+export function getRelatedPosts(
   currentSlug: string,
   maxPosts = 3,
-): Promise<BlogPostPreview[]> {
-  const currentPost = await getBlogPostBySlug(currentSlug);
+): BlogPostPreview[] {
+  const currentPost = getBlogPostBySlug(currentSlug);
   if (!currentPost || !currentPost.frontmatter.isPublished) {
     return [];
   }
