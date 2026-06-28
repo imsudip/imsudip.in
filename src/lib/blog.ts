@@ -16,7 +16,7 @@ const LISTING_FIELDS = [
   'tags',
   'publishedAt',
 ];
-const FULL_FIELDS = [...LISTING_FIELDS, 'content'];
+const FULL_FIELDS = [...LISTING_FIELDS, 'content', 'status'];
 
 /**
  * Normalise Outstatic tags (array of { label, value } objects) to string[]
