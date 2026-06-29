@@ -98,7 +98,7 @@ const ChatBubble: React.FC = () => {
     >
       <ExpandableChatHeader>
         <div className="flex items-center space-x-3">
-          <Avatar className="border-primary h-8 w-8 border-2 bg-blue-300 dark:bg-yellow-300">
+          <Avatar className="border-primary h-8 w-8 border-2">
             <AvatarImage src="/assets/logo.png" alt="Assistant" />
             <AvatarFallback>AI</AvatarFallback>
           </Avatar>
@@ -135,7 +135,7 @@ const ChatBubble: React.FC = () => {
                 >
                   <div className="flex items-start space-x-2">
                     {!isUser && (
-                      <Avatar className="border-primary h-6 w-6 border-2 bg-blue-300 dark:bg-yellow-300">
+                      <Avatar className="border-primary h-6 w-6 border-2">
                         <AvatarImage src="/assets/logo.png" alt="Assistant" />
                         <AvatarFallback>AI</AvatarFallback>
                       </Avatar>

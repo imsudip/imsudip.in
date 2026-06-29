@@ -33,15 +33,15 @@ export const experiences: Experience[] = [
   {
     isCurrent: true,
     company: 'American Express',
-    position: 'Software Engineer II',
+    position: 'SDE II (current) | SDE I | Intern',
     location: 'Bengaluru, Karnataka, India',
-    image: '/company/amex.png',
+    image: '/company/amex.svg',
     description: [
       'Building and maintaining enterprise-scale software systems.',
       'Collaborating with cross-functional teams to deliver reliable, performant solutions.',
       'Working across backend services and frontend interfaces.',
     ],
-    startDate: 'Aug 2024',
+    startDate: 'Jan 2024',
     endDate: 'Present',
     technologies: [
       {
@@ -68,37 +68,7 @@ export const experiences: Experience[] = [
     website: 'https://www.americanexpress.com',
     linkedin: 'https://www.linkedin.com/company/american-express',
   },
-  {
-    isCurrent: false,
-    company: 'American Express',
-    position: 'Software Engineer Intern',
-    location: 'Bengaluru, Karnataka, India',
-    image: '/company/amex-intern.png',
-    description: [
-      'Contributed to enterprise applications during internship.',
-      'Gained exposure to large-scale systems and engineering best practices.',
-    ],
-    startDate: 'Jan 2024',
-    endDate: 'Jun 2024',
-    technologies: [
-      {
-        name: 'TypeScript',
-        href: 'https://www.typescriptlang.org/',
-        icon: <TypeScript />,
-      },
-      {
-        name: 'React',
-        href: 'https://react.dev/',
-        icon: <ReactIcon />,
-      },
-      {
-        name: 'Node.js',
-        href: 'https://nodejs.org/',
-        icon: <NodeJs />,
-      },
-    ],
-    website: 'https://www.americanexpress.com',
-  },
+
   {
     isCurrent: false,
     company: 'takeUforward',
