@@ -9,6 +9,7 @@ import { generateMetadata as getMetadata } from '@/config/Meta';
 import ReactLenis from 'lenis/react';
 import { ViewTransitions } from 'next-view-transitions';
 
+import { fonts } from './fonts';
 import './globals.css';
 
 export const metadata = getMetadata('/');
@@ -20,8 +21,8 @@ export default function RootLayout({
 }>) {
   return (
     <ViewTransitions>
-      <html lang="en" suppressHydrationWarning>
-        <body className={`font-hanken-grotesk antialiased`}>
+      <html lang="en" className={fonts} suppressHydrationWarning>
+        <body className={`font-sans antialiased`}>
           <ThemeProvider
             attribute="class"
             defaultTheme="system"

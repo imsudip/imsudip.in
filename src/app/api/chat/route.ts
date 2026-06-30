@@ -1,5 +1,5 @@
-import { systemPrompt } from '@/config/ChatPrompt';
-import { openai } from '@ai-sdk/openai';
+import { generateSystemPrompt } from '@/config/ChatPrompt';
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { UIMessage, convertToModelMessages, streamText } from 'ai';
 import { NextRequest, NextResponse } from 'next/server';
 import * as z from 'zod';
@@ -25,6 +25,7 @@ const chatSchema = z.object({
     )
     .min(1)
     .max(20),
+  language: z.string().optional().default('english'),
 });
 
 function sanitizeInput(input: string): string {
@@ -134,9 +135,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const apiKey = process.env.OPENAI_API_KEY;
+    const apiKey = process.env.SARVAM_API_KEY;
     if (!apiKey) {
-      console.error('OPENAI_API_KEY not configured');
+      console.error('SARVAM_API_KEY not configured');
       return NextResponse.json(
         { error: 'AI service not configured' },
         { status: 500 },
@@ -161,12 +162,20 @@ export async function POST(request: NextRequest) {
       }),
     ) as unknown as UIMessage[];
 
+    const sarvam = createOpenAICompatible({
+      baseURL: process.env.SARVAM_API_HOST!,
+      name: 'sarvam',
+      apiKey,
+    });
+
     const result = streamText({
-      model: openai('gpt-4o-mini'),
-      system: systemPrompt,
+      model: sarvam.chatModel(process.env.SARVAM_API_MODEL || 'sarvam-105b'),
+      system: generateSystemPrompt(validatedData.language),
       messages: await convertToModelMessages(sanitizedMessages),
-      maxOutputTokens: 512,
-      temperature: 0.7,
+      maxOutputTokens: 1024,
+      providerOptions: {
+        sarvam: { reasoning_effort: null },
+      },
     });
 
     return result.toUIMessageStreamResponse({

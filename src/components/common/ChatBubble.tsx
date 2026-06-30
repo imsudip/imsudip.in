@@ -11,13 +11,21 @@ import {
 } from '@/components/ui/expandable-chat';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { chatSuggestions } from '@/config/ChatPrompt';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { chatLanguages, chatSuggestions } from '@/config/ChatPrompt';
 import { heroConfig } from '@/config/Hero';
 import { useHapticFeedback } from '@/hooks/use-haptic-feedback';
 import { useUmami } from '@/hooks/use-umami';
 import { cn } from '@/lib/utils';
 import { useChat } from '@ai-sdk/react';
-import React, { useEffect, useRef, useState } from 'react';
+import { DefaultChatTransport } from 'ai';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 
 import SendIcon from '../svgs/SendIcon';
@@ -41,7 +49,19 @@ function getMessageText(parts: Array<{ type: string; text?: string }>): string {
 }
 
 const ChatBubble: React.FC = () => {
-  const { messages, sendMessage, status } = useChat();
+  const [language, setLanguage] = useState('english');
+  const languageRef = useRef(language);
+  languageRef.current = language;
+
+  const transport = useMemo(
+    () =>
+      new DefaultChatTransport({
+        body: () => ({ language: languageRef.current }),
+      }),
+    [],
+  );
+
+  const { messages, sendMessage, status } = useChat({ transport });
   const [input, setInput] = useState('');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { triggerHaptic, isMobile } = useHapticFeedback();
@@ -142,7 +162,10 @@ const ChatBubble: React.FC = () => {
                     )}
                     <div className="max-w-xs flex-1 md:max-w-sm">
                       <div className="flex items-center gap-2">
-                        <div className="prose prose-sm dark:prose-invert max-w-none flex-1">
+                        <div
+                          className="prose prose-sm dark:prose-invert max-w-none flex-1"
+                          dir={language === 'urdu' ? 'rtl' : 'ltr'}
+                        >
                           {text ? (
                             <ReactMarkdown
                               components={{
@@ -197,22 +220,45 @@ const ChatBubble: React.FC = () => {
 
             {/* Show suggestions only when conversation just started */}
             {messages.length === 0 && status === 'ready' && (
-              <div className="space-y-2">
-                <p className="text-muted-foreground px-3 text-xs">
-                  Quick questions:
-                </p>
-                <div className="flex flex-wrap gap-2 px-3">
-                  {chatSuggestions.map((suggestion, index) => (
-                    <Button
-                      key={index}
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleSuggestionClick(suggestion)}
-                      className="bg-background hover:bg-muted border-muted-foreground/20 h-8 px-3 text-xs"
-                    >
-                      {suggestion}
-                    </Button>
-                  ))}
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <p className="text-muted-foreground px-3 text-xs">
+                    Ask in your own language
+                  </p>
+                  <div className="px-3">
+                    <Select value={language} onValueChange={setLanguage}>
+                      <SelectTrigger className="text-muted-foreground hover:text-foreground h-8 w-36 gap-1 border-none px-2 text-xs shadow-none">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {chatLanguages.map((lang) => (
+                          <SelectItem key={lang.code} value={lang.code}>
+                            {lang.nativeLabel}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-muted-foreground px-3 text-xs">
+                    Quick questions:
+                  </p>
+                  <div className="flex flex-wrap gap-2 px-3">
+                    {(chatSuggestions[language] || chatSuggestions.english).map(
+                      (suggestion, index) => (
+                        <Button
+                          key={index}
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleSuggestionClick(suggestion)}
+                          className="bg-background hover:bg-muted border-muted-foreground/20 h-8 px-3 text-xs"
+                        >
+                          {suggestion}
+                        </Button>
+                      ),
+                    )}
+                  </div>
                 </div>
               </div>
             )}
